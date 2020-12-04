@@ -201,30 +201,47 @@ Navicon.nav_agreement = (function() {
         );
     }
 
-    function validateCreditDate(startCreditDate, endCreditDate, creditPeriod) {
+    /**
+     * Функция производит валидацию кредитной программы
+     * @param {string} endCreditDate дата окончания кредитной программы
+     * @returns {bool} является ли валидной
+     */
+    function validateCreditDate(endCreditDate) {
         const creditDate = new Date(endCreditDate);
         const today = new Date();   
         return creditDate > today;
     }
 
+    /**
+     * Функция показывающая сообщение об ошибке
+     * @param {string} attributeKey название атрибута
+     * @param {string} message сообщение
+     */
     function showAttributeError(attributeKey, message) {
         state.formContext.getAttribute(attributeKey).setIsValid(false, message);
         state.formContext.getControl(attributeKey).setNotification(message);
     }
 
+    /**
+     * Функция убирающая сообщение об ошибке
+     * @param {string} attributeKey название атрибута
+     */
     function hideAttributeError(attributeKey) {
         state.formContext.getAttribute(attributeKey).setIsValid(true, '');
         state.formContext.getControl(attributeKey).clearNotification();
     }
 
-    function initForm(formContext) {
+    /**
+     * Функция инициализации формы
+     */
+    function initForm() {
         subscribeAttributesChanges();
     }
 
     return {
         onLoad: function(context) {
-            const formContext = context.getFormContext();
-            initForm(formContext);
+            state.formContext = context.getFormContext();
+            initForm();
         }
     };
 })();

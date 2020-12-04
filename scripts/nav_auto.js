@@ -2,6 +2,9 @@ var Navicon = Navicon || {}
 
 Navicon.nav_auto = (function() {
 
+    /**
+     * Ключи атрибутов
+     */
     const amountKey = "nav_amount";
     const brandKey = "nav_brandid";
     const detailsKey = "nav_details";
@@ -13,6 +16,10 @@ Navicon.nav_auto = (function() {
     const vechcleNumberKey = "nav_vechclenumber";
     const vinKey = "nav_vin";
 
+    /**
+     * Обработчик события изменения значения наличия пробега у автомобиля
+     * @param {object} executionContext контекст выполнения
+     */
     function onUsedCarValeChanged(executionContext) {
         const formContext = executionContext.getFormContext();
         const usedValue = formContext.getAttribute(usedKey).getValue();
@@ -27,6 +34,12 @@ Navicon.nav_auto = (function() {
         }
     }
 
+    
+
+    /**
+     * Функция подписывающая обработчики на события изменеиния значений в полях формы
+     * @param {object} formContext контекст формы
+     */
     function subscribeOnAttributesChanges(formContext) {
         formContext.getAttribute(usedKey)
                    .addOnChange(onUsedCarValeChanged);
