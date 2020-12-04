@@ -2,49 +2,74 @@ var Navicon = Navicon || {};
 
 Navicon.nav_agreement = (function() {
 
-    //ключи полей формы
-    const agreementField = "nav_name";
-    const carField = "nav_autoid";
-    const contactField = "nav_contact";
-    const dateField = "nav_date";
-    const sumField = "nav_sum";
-    const isPayedField = "nav_fact";
-    const creditField = "nav_creditid";
-    const creditPeriodField = "nav_creditperiod";
-    const creditSumField = "nav_creditamount";
-    const creditFullSumField = "nav_fullcreditamount";
-    const firstPaymentField = "nav_initialfee";
+    /**
+     * ключи полей формы 
+     */
+    const agrNameKey = "nav_name";
+    const agrCarIdKey = "nav_autoid";
+    const agrContactIdKey = "nav_contact";
+    const agrDateKey = "nav_date";
+    const agrSumKey = "nav_sum";
+    const agrIsPayedKey = "nav_fact";
+    const creditIdKey = "nav_creditid";
+    const creditPeriodKey = "nav_creditperiod";
+    const agrCreditAmountKey = "nav_creditamount";
+    const agrCreditFullAmountKey = "nav_fullcreditamount";
+    const agrInitialfeeKey = "nav_initialfee";
     const payedSumField = "nav_factsumma";
-    const paymentPlanDateKey = "nav_paymentplandate";
+    const agrPaymentPlanDateKey = "nav_paymentplandate";
 
-
+    /**
+     * ключи сущностей 
+     */
     const creditEntityKey = "nav_credit";
     const carEntityKey = "nav_auto";
     const modelEntityKey = 'nav_model';
 
-    const carModelKey = "nav_modelid";
-    const carModelAmountKey = "nav_recomendedamount";
-    const carUsedKey = "nav_used";
-    const carAmountKey = "nam_amount";
+    /**
+     * ключи сущности авто 
+     */
+    const modelAmountKey = "nav_recomendedamount";
+    const autoUsedKey = "nav_used";
+    const autoAmountKey = "nav_amount";
 
-    //ключи вкладок формы
+    /**
+     * ключи атрибутов кредитная программа 
+     */
+    const creditEndDateKey = "nav_dateend";
+    const creditStartDateKey = "nav_datestart";
+
+    /**
+     * ключ вкладки Кредит
+     */
     const creditTab = "nav_credittab";
 
-    function subscribeAttributesChanges(formContext) {
-        formContext.getAttribute(contactField)
+    /**
+     * объект состояния
+     */
+    const state = {};
+
+    /**
+     * Функция подписывающая обработчики на события изменений 
+     * значений элементов формы
+     */
+    function subscribeAttributesChanges() {
+        state.formContext.getAttribute(agrContactIdKey)
                    .addOnChange(onContactValueChanged);
-        formContext.getAttribute(carField)
+        state.formContext.getAttribute(agrCarIdKey)
                    .addOnChange(onCarValueChanged);
-        formContext.getAttribute(creditField)
+        state.formContext.getAttribute(creditIdKey)
                    .addOnChange(onCreditValueChanged);
-        formContext.getAttribute(agreementField)
+        state.formContext.getAttribute(agrNameKey)
                    .addOnChange(onAgreementNameValueChanged);
-        formContext.ge
+        //formContext.
     }
 
-    function onAgreementNameValueChanged(executionContext) {
-        const formContext = executionContext.getFormContext();
-        const agreementNameAttr = formContext.getAttribute(agreementField);
+    /**
+     * Обработчик изменения значения поля имени договора
+     */
+    function onAgreementNameValueChanged() {
+        const agreementNameAttr = state.formContext.getAttribute(agrNameKey);
         const agreementNameValue = agreementNameAttr.getValue();
         if(agreementNameValue) {
             const newValue = agreementNameValue.replace(/[^0-9-]/g, '');
@@ -52,110 +77,148 @@ Navicon.nav_agreement = (function() {
         }
     }
 
-    function onCarValueChanged(context) {
-        const formContext = context.getFormContext();
-        form.car = formContext.getAttribute(carField).getValue()[0];
-        checkCreditTabVisible(formContext);
-        getCarActualAmount(formContext);
+    /**
+     * Обработчик изменения значения поля автомобиль
+     */
+    function onCarValueChanged() {
+        const values = state.formContext.getAttribute(agrCarIdKey).getValue();
+        state.form = state.form || {};
+        state.form.car = values ? values[0] : null;
+        checkCreditTabVisible(state.formContext);
+        if(form.car) {
+            getCarActualAmount(form.car);
+        } else {
+            setCreditValue(null);
+        }
     }
 
-    function onContactValueChanged(context) {
-        const formContext = context.getFormContext();
-        form.contact = formContext.getAttribute(contactField).getValue()[0];
-        checkCreditTabVisible(formContext);
+    /**
+     * Обработчик изменения значения поля контакт
+     */
+    function onContactValueChanged() {
+        const values = state.formContext.getAttribute(agrContactIdKey).getValue();
+        state.form = state.form || {};
+        state.form.contact = values ? values[0] : null;
+        checkCreditTabVisible();
     }
 
+    /**
+     * Обработчик изменения значения поля кредитная программа
+     */
     function onCreditValueChanged(executionContext) {
-        const formContext = executionContext.getFormContext();
-        // const firstPaymentCtrl = formContext.getControl(firstPaymentField);
-        // const paymentPlanDateCtrl = formContext.getControl(paymentPlanDate);
-        const creditPeriodCtrl = formContext.getControl(creditPeriodField);
-        const creditFullSumCtrl = formContext.getControl(creditFullSumField);
-        const creditSumCtrl = formContext.getControl(creditSumField);
-        const payedSumCtrl = formContext.getControl(payedSumField);
 
-        const creditValues = formContext.getAttribute(creditField).getValue();
+        const creditValues = state.formContext.getAttribute(creditIdKey).getValue();
         
         if(creditValues && creditValues[0]) {
-            // firstPaymentCtrl.setDisabled(false);
-            // paymentPlanDateCtrl.setDisabled(false);
-            creditSumCtrl.setDisabled(false);
-            creditPeriodCtrl.setDisabled(false);
-            creditFullSumCtrl.setDisabled(false);
-            payedSumCtrl.setDisabled(false);
             loadCredit(creditValues[0]);
+            setCreditDisable(false);
         } else {
-            // firstPaymentCtrl.setDisabled(true);
-            // paymentPlanDateCtrl.setDisabled(true);
-            creditSumCtrl.setDisabled(true);
-            creditPeriodCtrl.setDisabled(true);
-            creditFullSumCtrl.setDisabled(true);
-            payedSumCtrl.setDisabled(true);
+            setCreditDisable(true);
+            hideAttributeError(creditIdKey);S
         }
     }
 
-    function checkCreditTabVisible(formContext) {
-        if(form.car && form.contact) {
-            formContext.ui.tabs.get(creditTab).setVisible(true);
+    /**
+     * Функция переключения доступа к редактированию полей связанных с кредитом
+     * @param {boolean} isDisabled состояние редактирования значений полей на вкладке Кредит
+     */
+    function setCreditDisable(isDisabled) {
+        state.formContext.getControl(agrInitialfeeKey).setDisabled(isDisabled);
+        state.formContext.getControl(agrPaymentPlanDateKey).setDisabled(isDisabled);
+        state.formContext.getControl(agrCreditAmountKey).setDisabled(isDisabled);
+        state.formContext.getControl(creditPeriodKey).setDisabled(isDisabled);
+        state.formContext.getControl(agrCreditFullAmountKey).setDisabled(isDisabled);
+        state.formContext.getControl(payedSumField).setDisabled(isDisabled);
+    }
+
+    /**
+     * Функция проверяющая доступность вкладки Кредит
+     */
+    function checkCreditTabVisible() {
+        if(state.form && state.form.car && state.form.contact) {
+            state.formContext.ui.tabs.get(creditTab).setVisible(true);
         } else {
-            formContext.ui.tabs.get(creditTab).setVisible(false);
+            state.formContext.ui.tabs.get(creditTab).setVisible(false);
         }
     }
 
-    function getCarActualAmount(car, formContext) {
-        Xrm.WebApi.retrieveRecord(carEntityKey, car.id)
+    /**
+     * Функция запроса стоимости автомобиля
+     * @param {string} carid объект поля автомобиль
+     */
+    function getCarActualAmount(carid) {
+        carid = carid.replace(/[{}]/g, '');
+        Xrm.WebApi.retrieveRecord(carEntityKey, carid)
         .then(
             result => {
-                if(result[carUsedKey]) {
+                if(result[autoUsedKey]) {
                     Xrm.WebApi.retrieveRecord(modelEntityKey, result[carModelKey])
                     .then(
                         result => {
-                            ShowCarAmount(result[carModelAmountKey]);
+                            setCreditValue(result[modelAmountKey]);
                         },
                         error => {
-
+                            console.log(error);
                         }
                     )
                 } else {
-                    ShowCarAmount(result[carAmountKey]);
+                    setCreditValue(result[autoAmountKey]);
                 }
             },
             error => {
-
+                console.log(error);
             }
         )
     }
 
-    function loadCredit(credit, formContext) {
+    /**
+     * Функция установки суммы кредита
+     * @param {number} amount значение суммы
+     */
+    function setCreditValue(amount) {
+        state.formContext.getAttribute(agrCreditAmountKey).setValue(amount);
+    }
+
+    /**
+     * Функция запроса данных о кредитной программе
+     * @param {object} credit объект поля кредитная программа
+     */
+    function loadCredit(credit) {
         Xrm.WebApi.retrieveRecord(creditEntityKey, credit.id)
         .then(
             result => {
                 debugger;
-                const creditDate = result.nav_enddate;
-                const agreementDateAttr = formContext.getAttribute(dateField);
-                if(validateCreditDate(creditDate)) {
-                    agreementDateAttr.setValue(creditDate);
+                if(validateCreditDate(result[creditStartDateKey], result[creditEndDateKey], result[creditPeriodKey])) {
+                    state.formContext.getAttribute(creditPeriodKey).setValue(result[creditPeriodKey]);
+                    hideAttributeError(state.formContext, creditIdKey);
+                } else {
+                    showAttributeError(state.formContext, creditIdKey, 'Срок кредита истек');
                 }
             }, 
             error => {
+                console.log(error);
             }
         );
     }
 
-    function validateCreditDate(creditDate, agreementDate, formContext) {
-        if(creditDate && agreementDate && formContext) {
-            if(creditDate < agreementDate) {
-                formContext.getAttribute(creditField).setIsValid(false, 'Время кредита действия истекло');
-                formContext.getControl(creditField).setNotification();
-            } else {
-                formContext.getAttribute(creditField).setIsValid(true, '');
-                formContext.getControl(creditField).clearNotification();
-            }
-        }
+    function validateCreditDate(startCreditDate, endCreditDate, creditPeriod) {
+        const creditDate = new Date(endCreditDate);
+        const today = new Date();   
+        return creditDate > today;
+    }
+
+    function showAttributeError(attributeKey, message) {
+        state.formContext.getAttribute(attributeKey).setIsValid(false, message);
+        state.formContext.getControl(attributeKey).setNotification(message);
+    }
+
+    function hideAttributeError(attributeKey) {
+        state.formContext.getAttribute(attributeKey).setIsValid(true, '');
+        state.formContext.getControl(attributeKey).clearNotification();
     }
 
     function initForm(formContext) {
-        subscribeAttributesChanges(formContext);
+        subscribeAttributesChanges();
     }
 
     return {

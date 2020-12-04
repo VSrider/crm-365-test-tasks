@@ -15,12 +15,19 @@ Navicon.nav_communication = (function(){
 
     function onTypeValueChanged(executionContext) {
         const formContext = executionContext.getFormContext();
+        checkConntectionTypeSetted(formContext);
+    }
+
+    function checkConntectionTypeSetted(formContext) {
         const keyValue = formContext.getAttribute(typeKey).getValue();
         if(keyValue === typeOptions.phone) {
             formContext.getControl(phoneKey).setVisible(true);
             formContext.getControl(emailKey).setVisible(false);
         } else if (keyValue === typeOptions.email) {
             formContext.getControl(emailKey).setVisible(true);
+            formContext.getControl(phoneKey).setVisible(false);
+        } else {
+            formContext.getControl(emailKey).setVisible(false);
             formContext.getControl(phoneKey).setVisible(false);
         }
     }
@@ -34,6 +41,7 @@ Navicon.nav_communication = (function(){
         onLoad: function(executionContext) {
             const formContext = executionContext.getFormContext();
             subcribeAttributesChanges(formContext);
+            checkConntectionTypeSetted(formContext);
         }
     }
 })();

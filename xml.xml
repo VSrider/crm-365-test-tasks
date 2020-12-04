@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-16"?>
+<RibbonDiffXml xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <CustomActions>
+    <CustomAction Id="nav.nav_agreement.CalcCredit.Button.CustomAction" Location="Mscrm.Form.new_agreementf.MainTab.Save.Controls._children" Sequence="43">
+      <CommandUIDefinition>
+        <Button Alt="$LocLabels:nav.nav_agreement.CalcCredit.Button.Alt" Id="nav.nav_agreement.CalcCredit.Button" Image32by32="$webresource:nav_calc_image32" Image16by16="$webresource:nav_calc_image16" LabelText="$LocLabels:nav.nav_agreement.CalcCredit.Button.LabelText" Sequence="43" TemplateAlias="o1" ToolTipTitle="$LocLabels:nav.nav_agreement.CalcCredit.Button.ToolTipTitle" ToolTipDescription="$LocLabels:nav.nav_agreement.CalcCredit.Button.ToolTipDescription" />
+      </CommandUIDefinition>
+    </CustomAction>
+  </CustomActions>
+  <Templates>
+    <RibbonTemplates Id="Mscrm.Templates" />
+  </Templates>
+  <CommandDefinitions>
+    <CommandDefinition Id="nav.nav_agreement.CalcCredit.Command">
+      <EnableRules />
+      <DisplayRules>
+        <DisplayRule Id="nav.nav_agreement.DisplayRule0.DisplayRule" />
+      </DisplayRules>
+      <Actions>
+        <JavaScriptFunction FunctionName="Navicon.nav_agreement_ribbon.calcCredit" Library="$webresource:nav_agreement_ribbon_calccredit" />
+      </Actions>
+    </CommandDefinition>
+  </CommandDefinitions>
+  <RuleDefinitions>
+    <TabDisplayRules />
+    <DisplayRules>
+      <DisplayRule Id="nav.nav_agreementf.DisplayRule0.DisplayRule">
+        <EntityRule EntityName="nav_agreement" />
+      </DisplayRule>
+    </DisplayRules>
+    <EnableRules />
+  </RuleDefinitions>
+  <LocLabels>
+    <LocLabel Id="nav.nav_agreement.CalcCredit.Button.LabelText">
+      <Titles>
+        <Title description="Calc Credit" languagecode="1033" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="nav.nav_agreement.CalcCredit.Button.ToolTipTitle">
+      <Titles>
+        <Title description="Calc Credit" languagecode="1033" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="nav.nav_agreement.CalcCredit.Button.ToolTipDescription">
+      <Titles>
+        <Title description="Calc Credit" languagecode="1033" />
+      </Titles>
+    </LocLabel>
+    <LocLabel Id="nav.nav_agreement.CalcCredit.Button.Alt">
+      <Titles>
+        <Title description="Calc Credit" languagecode="1033" />
+      </Titles>
+    </LocLabel>
+  </LocLabels>
+</RibbonDiffXml>

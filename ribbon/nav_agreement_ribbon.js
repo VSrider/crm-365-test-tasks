@@ -12,6 +12,8 @@ Navicon.nav_agreement_ribbon = (function() {
 
     const creditEntityKey = "nav_credit";
 
+    const state = {};
+
     function calcCreditSum(sum, firstPayment) {
             return sum - firstPayment;
     }
@@ -19,11 +21,6 @@ Navicon.nav_agreement_ribbon = (function() {
     function calcCreditFullSum(creditSum, percent, creditPeriod) {
         if(creditSum && percent && creditPeriod) {
             return percent/100*creditPeriod*creditSum + creditSum;
-        }
-        const creditValues = formContext.getAttribute(creditKey).getValue();
-        const creditPeriod = formContext.getAttribute(creditPeriodKey);
-        if(creditSum, creditValues, creditPeriod) {
-            const creditRecord = loadCredit(credit);
         }
     }
 
@@ -37,16 +34,16 @@ Navicon.nav_agreement_ribbon = (function() {
         }   
     }
 
-    function showCreditSums(creditSum, creditFullSum, formContext) {
-        formContext.getAttribute(creditSumKey).setValue(creditSum);
-        formContext.getAttribute(creditFullSumKey).setValue(creditFullSum);
+    function showCreditSums(creditSum, creditFullSum) {
+        state.formContext.getAttribute(creditSumKey).setValue(creditSum);
+        state.formContext.getAttribute(creditFullSumKey).setValue(creditFullSum);
     }
 
-    function calcCreditSums(formContext) {
-        const creditPeriod = formContext.getAttribute(creditPeriodKey).getValue();
-        const firstPayment = formContext.getAttribute(firstPaymentKey).getValue();
-        const sum = formContext.getAttribute(sumKey).getValue();
-        const credits = formContext.getAttribute(creditKey).getValue();
+    function calcCreditSums() {
+        const creditPeriod = state.formContext.getAttribute(creditPeriodKey).getValue();
+        const firstPayment = state.formContext.getAttribute(firstPaymentKey).getValue();
+        const sum = state.formContext.getAttribute(sumKey).getValue();
+        const credits = state.formContext.getAttribute(creditKey).getValue();
         if(sum && creditPeriodKey && firstPayment && credits) {
             loadCredit(credits[0], 
                 result => {
@@ -55,16 +52,17 @@ Navicon.nav_agreement_ribbon = (function() {
                     showCreditSums(creditSum, creditFullSum);
                 }, 
                 error => {
-
+                    console.log(error);
                 }
             );
         }
     }
 
     return {
-        calcCredit : function(executionContext) {
-            const formContext = executionContext.getFormContext();
-            calcCreditSums(formContext);
+            calcCredit : function() {
+                debugger
+                state.formContext = executionContext.getFormContext();
+                calcCreditSums();
         }
     }
 })();

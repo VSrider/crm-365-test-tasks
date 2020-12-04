@@ -11,18 +11,27 @@ Navicon.nav_credit = (function(){
         const formContext = executionContext.getFormContext();
         const startDateValue = formContext.getAttribute(startDateKey).getValue();
         const endDateValue = formContext.getAttribute(endDateKey).getValue();
+
         if(endDateValue && startDateValue) {
             const timePeriod = endDateValue.getFullYear() - startDateValue.getFullYear();
             if(timePeriod < 1) {
-                formContext.getAttribute(endDateKey).setIsValid(false, 'Дата окончания должна быть больше даты начала минимум на 1 год');
-                formContext.getControl(endDateKey).setNotification('Дата окончания должна быть больше даты начала минимум на 1 год');
+                showError(formContext, endDateKey, 'Дата окончания должна быть больше даты начала минимум на 1 год');
             } else {
-                formContext.getAttribute(endDateKey).setIsValid(true);
-                formContext.getControl(endDateKey).clearNotification();
+                hideError(formContext, endDateKey);
             }
         }
         console.log(startDateValue);
         console.log(endDateValue);
+    }
+
+    function showError(formContext, attrKey, message) {
+        formContext.getAttribute(attrKey).setIsValid(false, message);
+        formContext.getControl(attrKey).setNotification(message);
+    }
+
+    function hideError(formContext, attrKey) {
+        formContext.getAttribute(attrKey).setIsValid(true);
+        formContext.getControl(attrKey).clearNotification();
     }
 
     function subscribeAttributesChanges(formContext) {

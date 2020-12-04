@@ -1,16 +1,35 @@
 (function() {
     
+    /**
+     * id и ключи атрибутов
+     */
+    const modelIdKey = "modelId";
+    const creditIdKey = "creditId";
+    const creditPeriodKey = "creditPeriod";
+    const modelNameKey = "modelName";
+    const creditNameKey = "creditName";
+
+    const modelEntityKey = "nav_model";
+    const creditEntityKey = "nav_credit";
+
+    const gridElementId = "credit-grid";
+
+    /**
+     * Создает строку запроса кредитных программ связанных с автомобилями данной марки
+     * @param {string} brandId id макри автомобиля
+     * @returns {string} строка запроса
+     */
     function buildFetch(brandId) {
-        const fetch = "<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>" +
+        const fetch = "<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='true'>" +
                         "<entity name='nav_credit' alias='credit' >" +
-                            "<attribute name='nav_creditid' />" +
-                            "<attribute name='nav_name' />" +
-                            "<attribute name='nav_creditperiod' />" +
+                            "<attribute name='nav_creditid' alias='creditId'/>" +
+                            "<attribute name='nav_name' alias='creditName'/>" +
+                            "<attribute name='nav_creditperiod' alias='creditPeriod'/>" +
                             "<link-entity name='nav_nav_auto_nav_credit' from='nav_creditid' to='nav_creditid' alias='ac' link-type='inner' >" +
                                 "<link-entity name='nav_auto' from='nav_autoid' to='nav_autoid' alias='a'> " +
                                     "<link-entity name='nav_model' from='nav_modelid' to='nav_modelid' alias='model' >" +
-                                        "<attribute name='nav_modelid' />" +
-                                        "<attribute name='nav_name' />" +
+                                        "<attribute name='nav_modelid' alias='modelId'/>" +
+                                        "<attribute name='nav_name' alias='modelName'/>" +
                                     "</link-entity>" +
                                     "<filter>" +
                                         "<condition attribute='nav_brandid' operator='eq' value='" + brandId + "' />" +
@@ -22,6 +41,9 @@
         return "?fetchXml=" + encodeURIComponent(fetch);
     }
 
+    /**
+     * Модель таблицы
+     */
     const gridModel = {
         defaultColDef: {
             width: 150,
@@ -30,24 +52,17 @@
         },
         columnDefs: [
             {
-                headerName: "CreditId",
-                field: "nav_creditid",
-            },
-            {
-                headerName: "ModelId",
-                field: "model.nav_modelid",
-            },
-            {
                 headerName: "Кредитная программа", 
-                field: "nav_name"
+                field: creditNameKey,
+                width: 200,
             },
             {
                 headerName: "Модель", 
-                field: "model.nav_name"
+                field: modelNameKey
             },
             {
                 headerName: "Срок кредита", 
-                field: "nav_creditperiod"
+                field: creditPeriodKey
             },
           ],
         rowData:[],
@@ -55,59 +70,62 @@
         paginationPageSize: 20,
     };
 
+    /**
+     * Инициализация таблицы в документе
+     */
     function initGrid() {
-        var gridElement = document.getElementById('credit-grid');
+        const gridElement = document.getElementById(gridElementId);
         new agGrid.Grid(gridElement, gridModel);
         gridModel.onCellClicked = onCellClicked;
+        gridModel.rowHeight = 50;
     }
 
+    /**
+     * Обработчик события клика на ячейку
+     * @param {object} data 
+     */
     function onCellClicked(data) {
-        debugger
+        if(data.column.colId === modelNameKey) {
+            openRecordInNewTab(modelEntityKey, data.data[modelIdKey]);
+        } else if (data.column.colId === creditNameKey) {
+            openRecordInNewTab(creditEntityKey, data.data[creditIdKey]);
+        }
     };
 
-    function initIframe() {
-        debugger;
-        console.log(parent.Xrm.WebApi);
-        initGrid();
+    /**
+     * Функция открывающая запись в новой вкладке
+     * @param {string} entityName 
+     * @param {number} recordId 
+     */
+    function openRecordInNewTab(entityName, recordId) {
+        const url = location.origin + "/main.aspx?pagetype=entityrecord&etn="+entityName+"&id="+encodeURIComponent(recordId);
+        window.open(url, "_blank");
     }
 
-    function openCredit(creditId) {
-        const url = "organization.com/main.aspx?etn=nav_credit&pagetype=entityrecord&id=" + encodeURIComponent(creditId);
-        window.open(url);
-    }
-
-    function openModel(modelId) {
-        const url = "organization.com/main.aspx?etn=nav_credit&pagetype=entityrecord&id=" + encodeURIComponent(creditId);
-        window.open(url);
-    }
-
+    /**
+     * Функция запрашивающая данные о кредитных программах в которых находятся автомобили данной марки
+     * @param {string} brand id марки автомобиля
+     */
     function loadCredits(brand) {
-        var fetch = buildFetch(brand);
-        return Xrm.WebApi.retrieveMultipleRecords("nav_credit", fetch)
-        
+        const fetch = buildFetch(brand);
+        return Xrm.WebApi.retrieveMultipleRecords(creditEntityKey, fetch);
     }
-
-    function fillGrid(brandId) {
-        initGrid();
-        loadCredits(brandId).then(
-            result => {
-                debugger;
-                gridModel.api.setRowData(result.entities);
-            },
-            error => {
-                debugger;
-                const err = error;
-                console.log(err);
-            }
-        );
-    }
-
     
+    /**
+     * Обработчик события полной загрузки документа
+     */
     function onDocumentLoad() {
-        debugger
         const brandId = parent.Xrm.Page.data.entity.getId();
         if(brandId) {
-            fillGrid(brandId);
+            initGrid();
+            loadCredits(brandId).then(
+                result => {
+                    gridModel.api.setRowData(result.entities);
+                },
+                error => {
+                    console.log(error);
+                }
+            );
         }
     }
 
